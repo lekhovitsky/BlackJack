@@ -1,2 +1,2 @@
 # BlackJack
-Final project for undergrad "C++ Programming" course at NURE
+Final project of undergrad "C++ Programming" course at NURE
