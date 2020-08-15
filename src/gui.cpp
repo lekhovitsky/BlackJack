@@ -1,40 +1,36 @@
 #include <sstream>
-#include "WindowOuter.h"
+#include "gui.hpp"
 
-WindowOuter::WindowOuter(const sf::Texture& texture, const sf::Font& font)
-	: window{ sf::VideoMode{ 1136, 640 }, "BlackJack Application" }, 
-	buttons{ 
-		std::make_pair("Hit", sf::Button{ sf::Vector2f{ 50, 480 }, Globals::_standardButtonSize, "Hit", font }),
-		std::make_pair("Stand", sf::Button{ sf::Vector2f{ 50, 560 }, Globals::_standardButtonSize, "Stand", font }),
-		std::make_pair("Double", sf::Button{ sf::Vector2f{ 986, 480 }, Globals::_standardButtonSize, "Double", font }),
-		std::make_pair("Split", sf::Button{ sf::Vector2f{ 986, 560 }, Globals::_standardButtonSize, "Split", font }),
-		std::make_pair("Insure", sf::Button{ sf::Vector2f{ 350, 560 }, Globals::_standardButtonSize, "Insure", font }),
-		std::make_pair("OK",  sf::Button{ sf::Vector2f{ 686, 560 }, Globals::_standardButtonSize, "OK", font })
+
+GUI::GUI(const sf::Texture& texture, const sf::Font& font)
+	: window{ sf::VideoMode{ 1136, 640 }, "BlackJack Application" }
+	, backGround{ texture }
+	, fontOfText{ font }
+	, buttons{
+		std::make_pair("Hit", sf::Button{sf::Vector2f{ 50, 480 }, GLOBALS::BUTTON_SIZE, "Hit", font }),
+		std::make_pair("Stand", sf::Button{sf::Vector2f{ 50, 560 }, GLOBALS::BUTTON_SIZE, "Stand", font }),
+		std::make_pair("Double", sf::Button{sf::Vector2f{ 986, 480 }, GLOBALS::BUTTON_SIZE, "Double", font }),
+		std::make_pair("Split", sf::Button{sf::Vector2f{ 986, 560 }, GLOBALS::BUTTON_SIZE, "Split", font }),
+		std::make_pair("Insure", sf::Button{sf::Vector2f{ 350, 560 }, GLOBALS::BUTTON_SIZE, "Insure", font }),
+		std::make_pair("OK",  sf::Button{sf::Vector2f{ 686, 560 }, GLOBALS::BUTTON_SIZE, "OK", font })
 	}
-{
-	backGround.setTexture(texture);
-	fontOfText = font;
-}
+{}
 
-WindowOuter::~WindowOuter()
+GUI::~GUI()
 {
-	/// ��� ��� ����� ��� �������� ����� ���� ���� ��� ����� ���������
-	/// �������, � ����� � ������� ����������� ���������������� ����������
-	/// � ������������� ��������, ���� ������� ������� �������� �����������
-	/// ��������� � ���� ����������� ���� - ������� ��� ����� ����� �����������
-	if (window.isOpen()) window.close();
+    if (window.isOpen()) window.close();
 	exit(0);
 }
 
-playerAnswer WindowOuter::collectAnswer(
+playerAnswer GUI::collect_answer(
 	std::unordered_set<std::string>& answerSet)
 {
 	while (window.isOpen())
 	{
 		window.clear();
-		drawElements();
+        draw_elements();
 		window.display();
-		sf::Event ev;
+		sf::Event ev{};
 		while (window.pollEvent(ev))
 		{
 			if (ev.type == sf::Event::MouseButtonPressed)
@@ -43,7 +39,7 @@ playerAnswer WindowOuter::collectAnswer(
 				{
 					if (buttons[answer].contains(sf::Mouse::getPosition(window))
 						&& sf::Mouse::isButtonPressed(sf::Mouse::Left))
-						return Globals::_strAnswMap[answer];
+						return GLOBALS::_strAnswMap[answer];
 				}
 			}
 			if (ev.type == sf::Event::Closed)
@@ -55,23 +51,23 @@ playerAnswer WindowOuter::collectAnswer(
 	}
 }
 
-unsigned WindowOuter::makeBet()
+unsigned GUI::make_bet()
 {
 	std::string str;
 	unsigned num{ 0 };
 	while (window.isOpen())
 	{
 		window.clear();
-		drawElements();
-		drawBet(str);
+        draw_elements();
+        draw_bet(str);
 		window.display();
-		sf::Event ev;
+		sf::Event ev{};
 		while (window.pollEvent(ev))
 		{
 			if (ev.type == sf::Event::TextEntered)
 			{
 				if (ev.text.unicode >= 48 && ev.text.unicode <= 57
-					&& 10 * num + ev.text.unicode - 48 <= *playerSum)
+					&& 10 * num + ev.text.unicode - 48 <= *balance)
 				{
 					num = 10 * num + ev.text.unicode - 48;
 					str += ev.text.unicode;
@@ -103,20 +99,20 @@ unsigned WindowOuter::makeBet()
 	}
 }
 
-void WindowOuter::addMessage(const std::string& message)
+void GUI::add_message(const std::string& message)
 {
 	messages.emplace_back(message);
 }
 
-void WindowOuter::showResults()
+void GUI::show_results()
 {
 	while (window.isOpen())
 	{
 		window.clear();
-		drawElements();
-		drawMessages();
+        draw_elements();
+        draw_messages();
 		window.display();
-		sf::Event ev;
+		sf::Event ev{};
 		while (window.pollEvent(ev))
 		{
 			if (ev.type == sf::Event::MouseButtonPressed)
@@ -137,7 +133,7 @@ void WindowOuter::showResults()
 	}
 }
 
-void WindowOuter::drawMessages()
+void GUI::draw_messages()
 {
 	auto size = messages.size();
 	if (size != boxes->size() - 1)
@@ -148,25 +144,25 @@ void WindowOuter::drawMessages()
 	{
 		auto text = sf::Text{ messages[i], fontOfText };
 		text.setPosition(sf::Vector2f{
-			Globals::_tableSize.x / (size + 1) * (i + 1) - 72,
-			Globals::_playerBoxLineY - 30
+                GLOBALS::TABLE_SIZE.x / (size + 1) * (i + 1) - 72,
+                GLOBALS::_playerBoxLineY - 30
 		});
 		window.draw(text);
 	}
 }
 
-void WindowOuter::drawElements()
+void GUI::draw_elements()
 {
 	window.draw(backGround);
 	for (auto& pair : buttons)
 	{
 		window.draw(pair.second);
 	}
-	drawBoxes();
-	drawSum();
+    draw_boxes();
+    draw_balance();
 }
 
-void WindowOuter::drawCard(const sf::Vector2f& pos, const Card& c)
+void GUI::draw_card(const sf::Vector2f& pos, const Card& c)
 {
 	sf::Texture texture;
 	if (!texture.loadFromFile(getCardImageFileName(c))) { exit(1); }
@@ -175,59 +171,59 @@ void WindowOuter::drawCard(const sf::Vector2f& pos, const Card& c)
 	window.draw(cardSprite);
 }
 
-void WindowOuter::drawCard(const sf::Vector2f& pos)
+void GUI::draw_card(const sf::Vector2f& pos)
 {
 	sf::Texture texture;
-	if (!texture.loadFromFile(Globals::_cardBackImageFileName)) { exit(1); }
+	if (!texture.loadFromFile(GLOBALS::CARD_BACK_FILE)) { exit(1); }
 	sf::Sprite cardSprite{ texture };
 	cardSprite.setPosition(pos);
 	window.draw(cardSprite);
 }
 
-void WindowOuter::drawBox(const sf::Vector2f& pos, const Box<WindowOuter>& box)
+void GUI::draw_box(const sf::Vector2f& pos, const Box& box)
 {
-	auto hand_copy = box.getHand();
-	auto score = box.getScore();
+	auto hand_copy = box.get_hand();
+	auto score = box.get_score();
 	auto num_cards = hand_copy.size();
 	for (unsigned i = 0; i < num_cards; ++i)
 	{
-		drawCard(sf::Vector2f{
-			pos.x + i * Globals::_cardOffset, pos.y 
-		}, hand_copy[i]);
+        draw_card(sf::Vector2f{
+                pos.x + i * GLOBALS::_cardOffset, pos.y
+        }, hand_copy[i]);
 	}
 	std::ostringstream score_stream;
 	score_stream << "Score: " << score;
 	sf::Text text{ score_stream.str(), fontOfText };
 	text.setFillColor(sf::Color::White);
-	text.setPosition(sf::Vector2f{ pos.x, pos.y + Globals::_cardSize.y });
+	text.setPosition(sf::Vector2f{ pos.x, pos.y + GLOBALS::CARD_SIZE.y });
 	if(num_cards) window.draw(text);
 }
 
-void WindowOuter::drawBoxes()
+void GUI::draw_boxes()
 {
 	auto num_boxes = boxes->size();
 	if (num_boxes == 0) return;
 	for (unsigned i = 0; i < num_boxes - 1; ++i)
 	{
-		drawBox(sf::Vector2f{ 
-			Globals::_tableSize.x / num_boxes * (i + 1) - 72, 
-			Globals::_playerBoxLineY 
-		}, *(*boxes)[i]);
+        draw_box(sf::Vector2f{
+                GLOBALS::TABLE_SIZE.x / num_boxes * (i + 1) - 72,
+                GLOBALS::_playerBoxLineY
+        }, *(*boxes)[i]);
 	}
-	if ((*boxes)[num_boxes - 1]->getHand().size() == 1)
+	if ((*boxes)[num_boxes - 1]->get_hand().size() == 1)
 	{
-		drawCard(sf::Vector2f{ 
-			Globals::_tableSize.x / 2 - Globals::_cardOffset - 72, 
-			Globals::_dealerBoxLineY
-		});
+        draw_card(sf::Vector2f{
+                GLOBALS::TABLE_SIZE.x / 2 - GLOBALS::_cardOffset - 72,
+                GLOBALS::_dealerBoxLineY
+        });
 	}
-	drawBox(sf::Vector2f{
-		Globals::_tableSize.x / 2 - 72,
-		Globals::_dealerBoxLineY
-	}, *(*boxes)[num_boxes - 1]);
+    draw_box(sf::Vector2f{
+            GLOBALS::TABLE_SIZE.x / 2 - 72,
+            GLOBALS::_dealerBoxLineY
+    }, *(*boxes)[num_boxes - 1]);
 }
 
-void WindowOuter::drawBet(const std::string& bet)
+void GUI::draw_bet(const std::string& bet)
 {
 	std::string str{ "Bet:  " };
 	str += bet;
@@ -237,10 +233,10 @@ void WindowOuter::drawBet(const std::string& bet)
 	window.draw(text);
 }
 
-void WindowOuter::drawSum()
+void GUI::draw_balance()
 {
 	std::ostringstream stream;
-	stream << "Sum: " << *playerSum;
+	stream << "Balance: " << *balance;
 	sf::Text text{ stream.str(), fontOfText };
 	text.setFillColor(sf::Color::White);
 	text.setPosition(sf::Vector2f{ 50, 60 });
@@ -250,7 +246,7 @@ void WindowOuter::drawSum()
 std::string getCardImageFileName(const Card& c)
 {
 	std::ostringstream filename;
-	filename << "assets\\";
+	filename << "../assets/";
 	auto val = c.get_value();
 	switch (val)
 	{

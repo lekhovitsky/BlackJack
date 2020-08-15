@@ -1,15 +1,18 @@
-#pragma once
+#ifndef PERSON_HPP
+#define PERSON_HPP
+
 #include <string>
 #include <memory>
+#include <utility>
+
 
 class Person
 {
 protected:
 	std::string name;
 public:
-	Person(std::string _name)
-		: name{ std::move(name) }
-	{}
+	explicit Person(std::string _name)
+		: name{ std::move(_name) } {}
 	Person(const Person&) = delete;
 	Person(Person&&) noexcept = default;
 	virtual ~Person() = default;
@@ -30,23 +33,20 @@ class Player
 	: public Person
 {
 protected:
-	unsigned sum;
+	unsigned balance;
 public:
-	Player(std::string _name, unsigned _sum = 1000)
-		: Person{ _name }, sum(_sum)
-	{}
+	explicit Player(unsigned initial_balance = 1000)
+		: Person{"Player"}, balance{initial_balance} {}
 	Player(const Player&) = delete;
 	Player(Player&&) noexcept = default;
-	// Добавляет к сумме игрока сумму reward
+
+	// TODO: zochem???
 	Player& operator += (unsigned reward) noexcept;
-	// Уменьшает сумму игрока на сумму bet или
-	// до нуля, если это невозможно
 	Player& operator -= (unsigned bet) noexcept;
-	bool bet_is_possible(unsigned bet) const noexcept;
-	unsigned getSum() const noexcept { return sum; }
-	std::shared_ptr<unsigned> getSumPtr() noexcept 
-	{ 
-		static auto ptr = std::shared_ptr<unsigned>(&sum);
-		return ptr;
-	}
+
+	[[nodiscard]] bool is_busted() const noexcept { return balance > 0; }
+	[[nodiscard]] bool is_bet_possible(unsigned bet) const noexcept { return bet <= balance; }
+    [[nodiscard]] unsigned get_balance() const noexcept { return balance; }
 };
+
+#endif

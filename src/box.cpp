@@ -1,12 +1,13 @@
-template<class UI>
-void Box<UI>::takeCard() noexcept
+#include "box.hpp"
+
+
+void Box::take_card() noexcept
 {
 	try
 	{
-		hand.emplace_back(
-			shoes->getCard());
-		refreshScore();
-		refreshStatus();
+		hand.emplace_back(shoes->get_card());
+        refresh_score();
+        refresh_status();
 	}
 	catch (std::runtime_error& e)
 	{
@@ -14,12 +15,17 @@ void Box<UI>::takeCard() noexcept
 	}
 	catch (std::exception& e)
 	{
-		std::cerr << "Something wrong: " << e.what() << std::endl;
+		std::cerr << "Something's wrong: " << e.what() << std::endl;
 	}
 }
 
-template<class UI>
-void Box<UI>::refreshScore() noexcept
+void Box::reset()
+{
+    status = boxStatus::InGame;
+    hand.clear();
+}
+
+void Box::refresh_score() noexcept
 {
 	score[0] = score[1] = 0;
 	for (const auto& card : hand)
@@ -43,18 +49,13 @@ void Box<UI>::refreshScore() noexcept
 	}
 }
 
-template<class UI>
-void Box<UI>::refreshStatus() noexcept
+void Box::refresh_status() noexcept
 {
 	status = boxStatus::InGame;
 	if (score[0] > 21)
 		status = boxStatus::Busted;
 	else if (score[0] == 21)
-		status = boxStatus::Stand;
-}
-
-template<class UI>
-bool Box<UI>::isBlackJack() const noexcept
-{
-	return (hand.size() == 2 && score[0] == 21);
+	    status = hand.size() == 2
+	            ? boxStatus::BlackJack
+	            : boxStatus::Stand;
 }

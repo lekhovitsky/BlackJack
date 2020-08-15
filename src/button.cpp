@@ -1,4 +1,4 @@
-#include "Button.h"
+#include "button.hpp"
 
 sf::Button::Button(
 	const sf::Vector2f& pos, const sf::Vector2f& size,
