@@ -41,4 +41,3 @@ bool sf::Button::contains(
         static_cast<float>(coord.x),
         static_cast<float>(coord.y) });
 }
-

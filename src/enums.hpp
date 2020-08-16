@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ENUMS_HPP
+#define ENUMS_HPP
 
 enum class cardSuit : short
 {
@@ -25,3 +26,5 @@ enum class playerAnswer : short
     Hit, Double,
     Insure
 };
+
+#endif
