@@ -23,5 +23,5 @@ enum class playerAnswer : short
 {
 	Split, Stand,
 	Hit, Double,
-	Insurance
+	Insure
 };
