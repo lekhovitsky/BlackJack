@@ -17,25 +17,25 @@ template<typename UI,
         >
 class Game
 {
-	Shoes shoes;
-	ui_ptr<UI> ui;
+    Shoes shoes;
+    ui_ptr<UI> ui;
 
-	Account account;
+    Account account;
     DealerBox dealer_box;
-	std::vector<PlayerBox> player_boxes;
+    std::vector<PlayerBox> player_boxes;
 public:
-	explicit Game(
-	        ui_ptr<UI>& ui,
-	        size_t initial_balance = 1000,
-	        size_t num_decks = 2);
+    explicit Game(
+            ui_ptr<UI>& ui,
+            size_t initial_balance = 1000,
+            size_t num_decks = 2);
 
     bool round();
-	void dealers_move();
-	void players_move(PlayerBox&);
+    void dealers_move();
+    void players_move(PlayerBox&);
     void result(PlayerBox&);
 
-	void display_results();
-	void reset();
+    void display_results();
+    void reset();
 };
 
 #include "game.tpp"

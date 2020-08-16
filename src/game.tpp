@@ -12,32 +12,32 @@ Game<UI, C>::Game(ui_ptr<UI>& ui, size_t initial_balance, size_t num_decks)
 template<typename UI, typename C>
 bool Game<UI, C>::round()
 {
-	reset();
-	auto bet = ui->make_bet();
+    reset();
+    auto bet = ui->make_bet();
     account.charge(bet);
-	player_boxes.emplace_back(account, shoes, bet);
+    player_boxes.emplace_back(account, shoes, bet);
 
     // two cards for a player
     player_boxes[0].take_card();
     player_boxes[0].take_card();
 
     // one card for a dealer
-	dealer_box.take_card();
+    dealer_box.take_card();
 
     // boxes may be added during the round,
     // so no iterators / for (auto e : arr)
-	for (size_t i = 0; i < player_boxes.size(); ++i)
+    for (size_t i = 0; i < player_boxes.size(); ++i)
         players_move(player_boxes[i]);
 
-	dealers_move();
+    dealers_move();
 
-	for (auto& box : player_boxes)
-	    result(box);
+    for (auto& box : player_boxes)
+        result(box);
 
     display_results();
 
-	// can play until player has some money
-	return !account.is_busted();
+    // can play until player has some money
+    return !account.is_busted();
 }
 
 template<typename UI, typename C>
@@ -177,5 +177,5 @@ void Game<UI, C>::reset()
     player_boxes.clear();
     dealer_box.reset();
     if (shoes.is_reset_needed())
-	    shoes.reset();
+        shoes.reset();
 }

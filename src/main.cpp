@@ -16,8 +16,8 @@ int main()
     GUI gui {texture, font};
     auto gui_ptr = std::shared_ptr<GUI>(&gui);
 
-	Game<GUI> game{gui_ptr};
+    Game<GUI> game{gui_ptr};
 
-	while (game.round());
-	return 0;
+    while (game.round());
+    return 0;
 }
