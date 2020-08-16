@@ -1,9 +1,21 @@
 template<typename UI, typename C>
+Game<UI, C>::Game(ui_ptr<UI>& ui, size_t initial_balance, size_t num_decks)
+    : ui{ui}
+    , account{ initial_balance }
+    , shoes{ num_decks }
+    , dealer_box{ shoes }
+{
+    ui->set_pointers(&account, &dealer_box, &player_boxes);
+    player_boxes.reserve(4);
+}
+
+template<typename UI, typename C>
 bool Game<UI, C>::round()
 {
 	reset();
-    player_boxes.emplace_back(player, shoes);
-    player_boxes[0].make_bet(ui->make_bet());
+	auto bet = ui->make_bet();
+    account.charge(bet);
+	player_boxes.emplace_back(account, shoes, bet);
 
     // two cards for a player
     player_boxes[0].take_card();
@@ -18,16 +30,14 @@ bool Game<UI, C>::round()
         players_move(player_boxes[i]);
 
 	dealers_move();
-	auto dealer_status = dealer_box.get_status();
-	auto dealer_score = dealer_box.get_score();
 
 	for (auto& box : player_boxes)
-	    box.pay_reward(dealer_status, dealer_score);
+	    result(box);
 
     display_results();
 
 	// can play until player has some money
-	return !player->is_busted();
+	return !account.is_busted();
 }
 
 template<typename UI, typename C>
@@ -57,10 +67,10 @@ void Game<UI, C>::dealers_move()
 template<typename UI, typename C>
 void Game<UI, C>::players_move(PlayerBox& box)
 {
-    auto pos = std::find(
-            player_boxes.cbegin(),
-            player_boxes.cend(),
-            box);
+    auto pos = std::find_if(
+            player_boxes.begin(),
+            player_boxes.end(),
+            [&box](auto& b) { return &box == &b; });
     if (pos == player_boxes.cend())
         throw std::logic_error{"Vector doesn't contain the box."};
 
@@ -71,68 +81,50 @@ void Game<UI, C>::players_move(PlayerBox& box)
     }
 
     // form an answer set to choose from on the next step
-    std::unordered_set<std::string> answerSet{
+    std::unordered_set<std::string> answers{
         "Hit",
         "Stand"
     };
-    if (box.is_split_possible()) answerSet.insert("Split");
-    if (box.is_double_possible()) answerSet.insert("Double");
-    if (box.is_insurance_possible(dealer_box)) answerSet.insert("Insure");
+    if (box.is_split_possible()) answers.insert("Split");
+    if (box.is_double_possible()) answers.insert("Double");
+    if (box.is_insurance_possible(dealer_box)) answers.insert("Insure");
 
-    /// Игра продолжается до тех пор, пока
-    /// на боксе стоит соответствующий статус.
-    /// Иначе, игра на этом боксе завершена
     while (box.in_game())
     {
-        auto answer = ui->collect_answer(answerSet);
-        if (answer == playerAnswer::Split)
+        auto answer = ui->collect_answer(answers);
+        if (answer == playerAnswer::Hit)
         {
-            /// Добвляем в вектор после текущего лемента
-            /// новый динамически созданный бокс, берем по карте
-            auto next_pos = player_boxes.emplace(pos + 1,
-                                          std::make_shared<PlayerBox>(
-                                                  player, shoes, box.bet,
-                                                  std::vector<Card>{ box.hand.back() }
-                                          ));
-            box.hand.pop_back();
-            box.take_card();
-            (*player) -= box.bet;
-            (*next_pos)->take_card();
-            /// Рекурсивно вызываем метод round для текущего бокса
-            players_move(box);
-            return;
-        }
-        else if (answer == playerAnswer::Double)
-        {
-            (*player) -= box.bet;
-            box.bet *= 2;
-            box.take_card();
-            return;
-        }
-        else if (answer == playerAnswer::Insurance)
-        {
-            box.insurance = box.bet / 2;
-            (*player) -= box.insurance;
-            /// После страховки игрок еще может
-            /// разделить руку или удвоить ставку
-            /// (наверное).
-            answerSet.erase("Insure");
-            continue;
-        }
-        else if (answer == playerAnswer::Hit)
-        {
-            box.take_card();
+            box.play_hit();
         }
         else if (answer == playerAnswer::Stand)
         {
-            box.set_status(boxStatus::Stand);
+            box.play_stand();
         }
-        /// После первого хода (кроме страховки)
-        /// игрок уже не может ни застраховаться,
-        /// ни удвоить, ни разделить руку
-        answerSet.erase("Split");
-        answerSet.erase("Double");
-        answerSet.erase("Insure");
+        else if (answer == playerAnswer::Double)
+        {
+            box.play_double();
+            // stop taking cords immediately after doubling
+            return;
+        }
+        else if (answer == playerAnswer::Insure)
+        {
+            box.play_insure();
+            // after insurance, we still can
+            // do Double Down or Split
+            answers.erase("Insure");
+            continue;
+        }
+        else if (answer == playerAnswer::Split)
+        {
+            auto new_pos = player_boxes.emplace(pos+1, box.play_split());
+            players_move(box);
+            return;
+        }
+        // after the first move, the player
+        // cannot split, double or insure
+        answers.erase("Split");
+        answers.erase("Double");
+        answers.erase("Insure");
     }
 }
 
@@ -142,11 +134,48 @@ void Game<UI, C>::display_results()
     ui->show_results();
 }
 
+template <typename UI, typename C>
+void Game<UI, C>::result(PlayerBox & box)
+{
+    float coef{ 0. };
+    std::string message{ "Lost!" };
+
+    if (box.blackjack())
+    {
+        coef = 2.5; message = "BlackJack!!!";
+    }
+    else if (box.busted())
+    {
+        coef = 0.; message = "Busted!";
+    }
+    else if (box.get_status() == boxStatus::Stand &&
+             (box.get_score() > dealer_box.get_score() ||
+              dealer_box.busted()))
+    {
+        coef = 2.0; message = "Won!";
+    }
+    else if (box.get_score() == dealer_box.get_score() &&
+             box.get_status() == boxStatus::Stand &&
+             dealer_box.get_status() == boxStatus::Stand)
+    {
+        coef = 1.0; message = "Draw.";
+    }
+    account.pay(coef * box.get_bet_size());
+
+    auto insurance = box.get_insurance_size();
+    if (dealer_box.blackjack() && insurance)
+    {
+        account.pay(2 * insurance); message += ". Insured!";
+    }
+    ui->add_message(message);
+}
+
+
 template<typename UI, typename C>
 void Game<UI, C>::reset()
 {
     player_boxes.clear();
     dealer_box.reset();
-    if (shoes->is_reset_needed())
-	    shoes->reset();
+    if (shoes.is_reset_needed())
+	    shoes.reset();
 }

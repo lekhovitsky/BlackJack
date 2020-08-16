@@ -8,37 +8,20 @@
 #include <iostream>
 #include "shoes.hpp"
 
-// TODO: unite all boxes in a single file
-
-using shoes_ptr = std::shared_ptr<Shoes>;
-
 
 class Box
-        : public std::enable_shared_from_this<Box>
 {
 public:
     std::vector<Card>			hand;
-    shoes_ptr					shoes;
+    Shoes					    &shoes;
 	std::array<unsigned, 2U>	score;
 	boxStatus					status;
 	virtual void				refresh_status() noexcept;
 	void						refresh_score() noexcept;
 
 public:
-    using Boxes = std::vector<std::shared_ptr<Box>>;
+	Box(Shoes &_shoes, std::vector<Card> _cards = {});
 
-	Box(
-	        shoes_ptr _shoes,
-		    std::vector<Card>&& _cards = {}
-	)
-		: shoes{std::move(_shoes)}
-		, status{boxStatus::InGame}
-		, score{0U, 0U}
-		, hand{_cards}
-	{
-        refresh_score();
-        refresh_status();
-	}
 	void take_card() noexcept;
 	void reset();
 

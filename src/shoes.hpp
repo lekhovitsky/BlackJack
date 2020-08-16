@@ -14,7 +14,9 @@ class Shoes
 public:
 	explicit Shoes(size_t _num_decks = 1);
 	Shoes(const Shoes&) = default;
+	Shoes& operator=(const Shoes&) = default;
 	Shoes(Shoes&&) noexcept = default;
+	Shoes& operator=(Shoes&&) = default;
 
 	Card get_card();
     void reset();

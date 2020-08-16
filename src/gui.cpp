@@ -4,8 +4,8 @@
 
 GUI::GUI(const sf::Texture& texture, const sf::Font& font)
 	: window{ sf::VideoMode{ 1136, 640 }, "BlackJack Application" }
-	, backGround{ texture }
-	, fontOfText{ font }
+	, backGround{texture}
+	, font{font}
 	, buttons{
 		std::make_pair("Hit", sf::Button{sf::Vector2f{ 50, 480 }, GLOBALS::BUTTON_SIZE, "Hit", font }),
 		std::make_pair("Stand", sf::Button{sf::Vector2f{ 50, 560 }, GLOBALS::BUTTON_SIZE, "Stand", font }),
@@ -23,7 +23,7 @@ GUI::~GUI()
 }
 
 playerAnswer GUI::collect_answer(
-	std::unordered_set<std::string>& answerSet)
+	AnswerSet& answerSet)
 {
 	while (window.isOpen())
 	{
@@ -67,7 +67,7 @@ unsigned GUI::make_bet()
 			if (ev.type == sf::Event::TextEntered)
 			{
 				if (ev.text.unicode >= 48 && ev.text.unicode <= 57
-					&& 10 * num + ev.text.unicode - 48 <= *balance)
+					&& 10 * num + ev.text.unicode - 48 <= account->get_balance())
 				{
 					num = 10 * num + ev.text.unicode - 48;
 					str += ev.text.unicode;
@@ -136,13 +136,12 @@ void GUI::show_results()
 void GUI::draw_messages()
 {
 	auto size = messages.size();
-	if (size != boxes->size() - 1)
-	{
+	if (size != player_boxes->size())
 		throw std::logic_error{ "Something's gone wrong" };
-	}
+
 	for (unsigned i = 0; i < size; ++i)
 	{
-		auto text = sf::Text{ messages[i], fontOfText };
+		auto text = sf::Text{messages[i], font };
 		text.setPosition(sf::Vector2f{
                 GLOBALS::TABLE_SIZE.x / (size + 1) * (i + 1) - 72,
                 GLOBALS::_playerBoxLineY - 30
@@ -165,7 +164,8 @@ void GUI::draw_elements()
 void GUI::draw_card(const sf::Vector2f& pos, const Card& c)
 {
 	sf::Texture texture;
-	if (!texture.loadFromFile(getCardImageFileName(c))) { exit(1); }
+	if (!texture.loadFromFile("../assets/"+c.to_str()+".png"))
+	    exit(1);
 	sf::Sprite cardSprite{ texture };
 	cardSprite.setPosition(pos);
 	window.draw(cardSprite);
@@ -193,7 +193,7 @@ void GUI::draw_box(const sf::Vector2f& pos, const Box& box)
 	}
 	std::ostringstream score_stream;
 	score_stream << "Score: " << score;
-	sf::Text text{ score_stream.str(), fontOfText };
+	sf::Text text{score_stream.str(), font };
 	text.setFillColor(sf::Color::White);
 	text.setPosition(sf::Vector2f{ pos.x, pos.y + GLOBALS::CARD_SIZE.y });
 	if(num_cards) window.draw(text);
@@ -201,33 +201,34 @@ void GUI::draw_box(const sf::Vector2f& pos, const Box& box)
 
 void GUI::draw_boxes()
 {
-	auto num_boxes = boxes->size();
-	if (num_boxes == 0) return;
-	for (unsigned i = 0; i < num_boxes - 1; ++i)
-	{
+    // draw player's boxes
+    auto num_boxes = PlayerBox::num_boxes;
+	for (unsigned i = 0; i < num_boxes; ++i)
         draw_box(sf::Vector2f{
-                GLOBALS::TABLE_SIZE.x / num_boxes * (i + 1) - 72,
+                GLOBALS::TABLE_SIZE.x / (num_boxes+1) * (i + 1) - 72,
                 GLOBALS::_playerBoxLineY
-        }, *(*boxes)[i]);
-	}
-	if ((*boxes)[num_boxes - 1]->get_hand().size() == 1)
-	{
+        }, (*player_boxes)[i]);
+
+	// draw dealer's box
+	// if his hands contains only one card,
+	// draw one more, face down.
+    auto num_cards = dealer_box->get_hand().size();
+	if (num_cards == 1)
         draw_card(sf::Vector2f{
                 GLOBALS::TABLE_SIZE.x / 2 - GLOBALS::_cardOffset - 72,
                 GLOBALS::_dealerBoxLineY
         });
-	}
     draw_box(sf::Vector2f{
             GLOBALS::TABLE_SIZE.x / 2 - 72,
             GLOBALS::_dealerBoxLineY
-    }, *(*boxes)[num_boxes - 1]);
+    }, *dealer_box);
 }
 
 void GUI::draw_bet(const std::string& bet)
 {
 	std::string str{ "Bet:  " };
 	str += bet;
-	sf::Text text{ str, fontOfText };
+	sf::Text text{str, font };
 	text.setFillColor(sf::Color::White);
 	text.setPosition(sf::Vector2f{ 50, 90 });
 	window.draw(text);
@@ -236,52 +237,9 @@ void GUI::draw_bet(const std::string& bet)
 void GUI::draw_balance()
 {
 	std::ostringstream stream;
-	stream << "Balance: " << *balance;
-	sf::Text text{ stream.str(), fontOfText };
+	stream << "Balance: " << account->get_balance();
+	sf::Text text{stream.str(), font };
 	text.setFillColor(sf::Color::White);
 	text.setPosition(sf::Vector2f{ 50, 60 });
 	window.draw(text);
-}
-
-std::string getCardImageFileName(const Card& c)
-{
-	std::ostringstream filename;
-	filename << "../assets/";
-	auto val = c.get_value();
-	switch (val)
-	{
-	case cardValue::Ace:
-		filename << "A";
-		break;
-	case cardValue::King:
-		filename << "K";
-		break;
-	case cardValue::Queen:
-		filename << "Q";
-		break;
-	case cardValue::Jack:
-		filename << "J";
-		break;
-	default:
-		filename << static_cast<short>(val);
-		break;
-	}
-	auto suit = c.get_suit();
-	switch (suit)
-	{
-	case cardSuit::Spades:
-		filename << "S";
-		break;
-	case cardSuit::Hearts:
-		filename << "H";
-		break;
-	case cardSuit::Clubs:
-		filename << "C";
-		break;
-	case cardSuit::Diamonds:
-		filename << "D";
-		break;
-	}
-	filename << ".png";
-	return filename.str();
 }

@@ -24,7 +24,7 @@ namespace GLOBALS
 		std::make_pair("Split", playerAnswer::Split),
 		std::make_pair("Stand", playerAnswer::Stand),
 		std::make_pair("Double", playerAnswer::Double),
-		std::make_pair("Insure", playerAnswer::Insurance)
+		std::make_pair("Insure", playerAnswer::Insure)
 	};
 }
 

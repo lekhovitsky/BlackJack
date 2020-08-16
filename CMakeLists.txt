@@ -7,9 +7,11 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(SFML 2.5 REQUIRED COMPONENTS graphics system window)
 
 add_executable(BlackJack
+        src/main.cpp
         src/ui.hpp
         src/box.hpp
         src/box.cpp
+        src/account.hpp
         src/button.hpp
         src/card.hpp
         src/dealer_box.hpp
@@ -18,7 +20,6 @@ add_executable(BlackJack
         src/game.hpp
         src/game.tpp
         src/globals.hpp
-        src/person.hpp
         src/player_box.hpp
         src/player_box.cpp
         src/resource.h
@@ -26,8 +27,6 @@ add_executable(BlackJack
         src/gui.hpp
         src/button.cpp
         src/card.cpp
-        src/main.cpp
-        src/person.cpp
         src/shoes.cpp
         src/gui.cpp)
 

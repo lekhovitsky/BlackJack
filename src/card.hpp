@@ -3,6 +3,7 @@
 
 #include "enums.hpp"
 #include <cstddef>
+#include <string>
 
 #define NUM_VALUES 13
 #define NUM_SUITS 4
@@ -31,6 +32,8 @@ public:
     void set_val(size_t value);
     void set_val(const cardValue& value) noexcept { _value = value; }
     [[nodiscard]] const cardValue& get_value() const noexcept { return _value; }
+
+    [[nodiscard]] std::string to_str() const noexcept;
 };
 
 #endif

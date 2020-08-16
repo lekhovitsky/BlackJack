@@ -1,5 +1,6 @@
 #include "card.hpp"
 #include <stdexcept>
+#include <sstream>
 
 
 Card::Card(cardValue value, cardSuit suit) noexcept
@@ -36,4 +37,43 @@ unsigned Card::get_score() const noexcept
 bool Card::equal_score(const Card& c1, const Card& c2)
 {
 	return c1.get_score() == c2.get_score();
+}
+
+std::string Card::to_str() const noexcept
+{
+    std::ostringstream s;
+    switch (_value)
+    {
+        case cardValue::Ace:
+            s << "A";
+            break;
+        case cardValue::King:
+            s << "K";
+            break;
+        case cardValue::Queen:
+            s << "Q";
+            break;
+        case cardValue::Jack:
+            s << "J";
+            break;
+        default:
+            s << static_cast<unsigned>(_value);
+            break;
+    }
+    switch (_suit)
+    {
+        case cardSuit::Spades:
+            s << "S";
+            break;
+        case cardSuit::Hearts:
+            s << "H";
+            break;
+        case cardSuit::Clubs:
+            s << "C";
+            break;
+        case cardSuit::Diamonds:
+            s << "D";
+            break;
+    }
+    return s.str();
 }

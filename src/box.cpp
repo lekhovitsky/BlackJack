@@ -1,11 +1,23 @@
 #include "box.hpp"
 
+#include <utility>
+
+
+Box::Box(Shoes &_shoes, std::vector<Card>  _cards)
+    : shoes{_shoes}
+    , status{boxStatus::InGame}
+    , score{0U, 0U}
+    , hand{std::move(_cards)}
+{
+    refresh_score();
+    refresh_status();
+}
 
 void Box::take_card() noexcept
 {
 	try
 	{
-		hand.emplace_back(shoes->get_card());
+		hand.emplace_back(shoes.get_card());
         refresh_score();
         refresh_status();
 	}
