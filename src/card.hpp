@@ -17,10 +17,10 @@ public:
     explicit Card(size_t value) noexcept;
     Card(cardValue value, cardSuit suit) noexcept;
 
-	Card(Card&&) noexcept = default;
 	Card(const Card&) noexcept = default;
-	Card& operator = (const Card&) noexcept = default;
-	Card& operator = (Card&&) noexcept = default;
+    Card(Card&&) noexcept = default;
+	Card& operator=(const Card&) noexcept = default;
+	Card& operator=(Card&&) noexcept = default;
 
     [[nodiscard]] unsigned get_score() const noexcept;
     static bool equal_score(const Card&, const Card&);
