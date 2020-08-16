@@ -22,12 +22,12 @@ protected:
     std::shared_ptr<
         std::vector<PlayerBox>>  player_boxes;
 public:
-	BaseUI() = default;
-	virtual ~BaseUI() = default;
-	virtual void show_results() = 0;
-	virtual void add_message(const std::string& message) = 0;
-	virtual unsigned make_bet() = 0;
-	virtual playerAnswer collect_answer(AnswerSet& answer_set) = 0;
+    BaseUI() = default;
+    virtual ~BaseUI() = default;
+    virtual void show_results() = 0;
+    virtual void add_message(const std::string& message) = 0;
+    virtual unsigned make_bet() = 0;
+    virtual playerAnswer collect_answer(AnswerSet& answer_set) = 0;
 
     void set_pointers(Account *account_ptr,
                       DealerBox *dealer_box_ptr,

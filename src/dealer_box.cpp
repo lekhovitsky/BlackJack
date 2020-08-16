@@ -5,9 +5,9 @@ bool DealerBox::is_blackjack_possible() const
 {
     // if there is only one opened card, and
     // it is one of Jack, Queen, King or Ace
-	return hand.size() == 1 && (
-	        hand[0].get_score() == 1 ||
-	        hand[0].get_score() == 10);
+    return hand.size() == 1 && (
+            hand[0].get_score() == 1 ||
+            hand[0].get_score() == 10);
 }
 
 void DealerBox::refresh_status() noexcept

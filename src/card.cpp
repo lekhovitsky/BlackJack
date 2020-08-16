@@ -27,16 +27,16 @@ void Card::set_val(size_t value)
 
 unsigned Card::get_score() const noexcept
 {
-	if (_value == cardValue::Jack  ||
+    if (_value == cardValue::Jack  ||
         _value == cardValue::Queen ||
         _value == cardValue::King)
-	    return 10;
-	return static_cast<unsigned>(_value);
+        return 10;
+    return static_cast<unsigned>(_value);
 }
 
 bool Card::equal_score(const Card& c1, const Card& c2)
 {
-	return c1.get_score() == c2.get_score();
+    return c1.get_score() == c2.get_score();
 }
 
 std::string Card::to_str() const noexcept

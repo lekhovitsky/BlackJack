@@ -9,22 +9,22 @@
 
 class PlayerBox : public Box
 {
-	size_t	 bet;
-	size_t	 insurance;
-	Account& account;
+    size_t	 bet;
+    size_t	 insurance;
+    Account& account;
 public:
-	static unsigned num_boxes;
-	PlayerBox(
-	        Account &_account,
-	        Shoes &_shoes,
-	        size_t _bet = 0,
-	        std::vector<Card> _cards = {}
-	);
-	~PlayerBox() override;
+    static unsigned num_boxes;
+    PlayerBox(
+            Account &_account,
+            Shoes &_shoes,
+            size_t _bet = 0,
+            std::vector<Card> _cards = {}
+    );
+    ~PlayerBox() override;
     PlayerBox(const PlayerBox&) noexcept;
     PlayerBox& operator=(const PlayerBox&) noexcept;
 
-	[[nodiscard]] bool is_split_possible() const noexcept;
+    [[nodiscard]] bool is_split_possible() const noexcept;
     [[nodiscard]] bool is_double_possible() const noexcept;
     [[nodiscard]] bool is_insurance_possible(const DealerBox&) const noexcept;
 
